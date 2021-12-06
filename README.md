@@ -1,4 +1,4 @@
-# bimm143
+# BIMM143
 Bioinformatics class at UC San Diego fall 2021 [BIMM143 Fall 2021](https://thoang1234.github.io/bimm143/)
 
 #content
