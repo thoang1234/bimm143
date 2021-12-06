@@ -1,0 +1,176 @@
+---
+title: "Lab6_2"
+author: 'Thao Hoang PID: A15449860'
+date: "10/14/2021"
+output: pdf_document
+---
+
+***A play with Rmarkdown***
+
+Plain texts. **bold**. *italicized*
+
+```{r}
+#this is a code chunk
+plot(1:10)
+```
+##R Functions
+
+In today's class we are going to write a function together that grades some students' work.
+
+>Q1. Write a function grade() to determine an overall grade from a vector of student homework assignment scores dropping the lowest single score. If a student misses a homework (i.e. has an NA value) this can be used as a score to be potentially dropped. Your final function should be adquately explained with code comments and be able to work on an example class gradebook such as this one in CSV format: "https://tinyurl.com/gradeinput" [3pts]
+ 
+```{r}
+# Example input vectors to start with
+student1 <- c(100, 100, 100, 100, 100, 100, 100, 90)
+student2 <- c(100, NA, 90, 90, 90, 90, 97, 80)
+student3 <- c(90, NA, NA, NA, NA, NA, NA, NA)
+```
+
+Let's start with student 1 and find their average score.
+
+```{r}
+mean(student1)
+```
+But we want to drop the lowest score… we could try the min()
+```{r}
+min(student1)
+```
+
+The which.min() looks useful:
+```{r}
+which.min(student1)
+```
+
+This gives the position of the lowest score.
+```{r}
+#lowest score 
+student1[which.min(student1)]
+```
+
+To drop this value I can use minus
+```{r}
+student1[-which.min(student1)]
+```
+
+Let's now use mean() to get the average minus the lowest score.
+```{r}
+mean(student1[-which.min(student1)])
+```
+
+This code doesn't work
+```{r}
+student2
+student2[-which.min(student2)]
+```
+
+Need to remove the NA elements of the vector
+```{r}
+mean(student2[-which.min(student2)], na.rm=TRUE)
+```
+
+Still not what we want, dropped the 80 instead of NA (lowest score but not the missing one)
+
+Let's look at student3
+```{r}
+student3
+mean(student3[-which.min(student3)], na.rm=TRUE)
+```
+
+Possible approach, replace the NA with 0 Let's try with student2
+```{r}
+student2
+is.na(student2)
+```
+
+The is.na() function returns a logical vector where TRUE elements where the NA values are
+```{r}
+which(is.na(student2))
+```
+
+Now let's make the NA values into 0s.
+```{r}
+student2.prime<-student2
+student2.prime
+student2.prime[which(is.na(student2.prime))]=0
+student2.prime
+```
+
+Now we need to put these all together to get the average score dropping the lowest score where we map NA values to zero.
+```{r}
+student2.prime<-student2
+student2.prime[which(is.na(student2.prime))]=0
+mean(student2.prime[-which.min(student2.prime)])
+```
+
+Now check this method with student3
+```{r}
+student3.prime<-student3
+student3.prime[which(is.na(student3.prime))]=0
+mean(student3.prime[-which.min(student3.prime)])
+```
+
+Got it working, Let's simplify
+```{r}
+x<-student3
+#Map NA value to zero
+x[which(is.na(x))]=0
+#find the mean without the lowest value
+mean(x[-which.min(x)])
+```
+
+now we can use this as the body of my function
+```{r}
+grade <- function(x){
+  #make sure scores are all numbers
+  x <- as.numeric(x)
+ #Map NA value to zero
+x[which(is.na(x))]=0
+#find the mean without the lowest value
+mean(x[-which.min(x)]) 
+}
+```
+
+Now read the full gradebook CSV file
+```{r}
+scores <- read.csv("https://tinyurl.com/gradeinput", row.names=1)
+scores
+```
+
+```{r}
+apply(scores, 1, grade)
+```
+
+>#Q2 Who is the top scoring student overall in the gradebook?
+
+```{r}
+ans <- apply(scores, 1, grade)
+which.max(ans)
+```
+
+>Q3 . From your analysis of the gradebook, which homework was toughest on students (i.e. obtained
+the lowest scores overall? 
+
+```{r}
+apply(scores, 2,mean, na.rm=TRUE)
+```
+
+## add an extra argument to our function
+
+we want to optionally turn the dropping of the lowest score off for grading
+
+```{r}
+grade <- function(x){
+  #make sure scores are all numbers
+  x <- as.numeric(x)
+ #Map NA value to zero
+x[which(is.na(x))]=0
+
+if(drop.lowest){
+#find the mean without the lowest value
+mean(x[-which.min(x)])}
+else{
+  mean(x)
+}
+} 
+```
+
